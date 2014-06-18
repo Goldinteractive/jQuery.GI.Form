@@ -5,12 +5,15 @@ $.fn.GIForm = function(customOptions) {
 	 */
 	var $form = this,
 		_ID = '_' + new Date().getTime(),
+		_isDisabled = false,
 		_options = $.extend({
 			ajaxOptions: {},
 			extraFormParams: {},
 			parseErrors: null,
 			parseSuccessMsg: null,
 			validateResponse: null,
+			removeTheFormOnSuccess: true,
+			$formFeedbackWrapper: null,
 			onInputError: null
 		}, customOptions),
 		/**
@@ -43,11 +46,18 @@ $.fn.GIForm = function(customOptions) {
 		 *
 		 */
 		_formFeedback = function(response) {
+
+			$form.stop().animate({
+				opacity:1
+			});
+
 			$('.error', $form).removeClass('error');
 			if (_validateResponse(response))
 				_onFormSuccess(response);
 			else
 				_onFormError(response);
+
+			_isDisabled = false;
 		},
 		/**
 		 * Destroy the plugin stuff
@@ -61,7 +71,14 @@ $.fn.GIForm = function(customOptions) {
 		 *
 		 */
 		_onFormSuccess = function(response) {
-			$form.find('.formFeedback').html(response.message);
+
+			if (_options.$formFeedbackWrapper) {
+
+				_options.$formFeedbackWrapper.html(_parseSuccessMsg(response));
+			}
+			if (_options.removeTheFormOnSuccess) {
+				$form.stop().off().remove();
+			}
 		},
 		/**
 		 *
@@ -76,6 +93,12 @@ $.fn.GIForm = function(customOptions) {
 					_options.onInputError($input, error);
 			}, this);
 		},
+		_onBeforeSend = function () {
+			$form.stop().animate({
+				opacity:0.3
+			});
+			_isDisabled = true;
+		},
 		/**
 		 *
 		 * On form submit callback
@@ -83,6 +106,9 @@ $.fn.GIForm = function(customOptions) {
 		 */
 		_onFormSubmit = function(e) {
 			e.preventDefault();
+
+			if (_isDisabled) return false;
+
 			// get the form input data
 			var formData = $form.serialize(),
 				extraFormParams = _options.extraFormParams;
@@ -97,7 +123,8 @@ $.fn.GIForm = function(customOptions) {
 				url: $form.attr('action'),
 				data: formData,
 				dataType:'json',
-				method: 'post'
+				method: 'post',
+				beforeSend: _onBeforeSend,
 			}, _options.ajaxOptions).always(_formFeedback);
 		},
 		/**
