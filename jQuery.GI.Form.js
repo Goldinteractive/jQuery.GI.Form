@@ -45,9 +45,9 @@ $.fn.GIForm = function(customOptions) {
 		_formFeedback = function(response) {
 			$('.error', $form).removeClass('error');
 			if (_validateResponse(response))
-				_onFormSuccess(arguments);
+				_onFormSuccess(response);
 			else
-				_onFormError(arguments);
+				_onFormError(response);
 		},
 		/**
 		 * Destroy the plugin stuff
@@ -70,9 +70,9 @@ $.fn.GIForm = function(customOptions) {
 		 */
 		_onFormError = function(response) {
 			_.each(_parseErrors(response), function(error) {
-				var $input = $('[name=' + error + ']', this);
+				var $input = $('[name=' + error + ']', $form);
 				$input.addClass('error');
-				if (_opitons.onInputError)
+				if (_options.onInputError)
 					_options.onInputError($input, error);
 			}, this);
 		},
@@ -96,6 +96,7 @@ $.fn.GIForm = function(customOptions) {
 			$.ajax({
 				url: $form.attr('action'),
 				data: formData,
+				dataType:'json',
 				method: 'post'
 			}, _options.ajaxOptions).always(_formFeedback);
 		},
