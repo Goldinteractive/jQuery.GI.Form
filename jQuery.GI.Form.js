@@ -1,144 +1,178 @@
-$.fn.GIForm = function(customOptions) {
-	'use strict';
-	/**
-	 * Private methods
-	 */
-	var $form = this,
-		_ID = '_' + new Date().getTime(),
-		_isDisabled = false,
-		_options = $.extend({
-			ajaxOptions: {},
-			extraFormParams: {},
-			parseErrors: null,
-			parseSuccessMsg: null,
-			validateResponse: null,
-			removeTheFormOnSuccess: true,
-			$formFeedbackWrapper: null,
-			onInputError: null
-		}, customOptions),
+/**
+ * Module to validate any form via ajax having an ajax api
+ */
+(function(root, factory) {
+	if (typeof define === 'function' && define.amd) {
+		define(['jquery'], factory);
+	} else if (typeof exports === 'object') {
+		module.exports = factory(jQuery);
+	} else {
+		// Browser globals (root is window)
+		root.returnExports = factory(jQuery);
+	}
+}(this, function($) {
+	$.fn.GIForm = function(customOptions) {
+		'use strict';
 		/**
-		 * Parse the json response checking if it's a success or a failure
+		 * Private methods
 		 */
-		_validateResponse = function(data) {
-			if (_options.validateResponse)
-				return _options.validateResponse(data);
-			else return data.success;
-		},
-		/**
-		 * If the validation fails this function returns the form errors array
-		 */
-		_parseErrors = function(data) {
-			if (_options.parseErrors)
-				return _options.parseErrors(data);
-			else return data.errors;
-		},
-		/**
-		 * If the validation is passed find the success message to print
-		 */
-		_parseSuccessMsg = function(data) {
-			if (_options.parseSuccessMsg)
-				return _options.parseSuccessMsg(data);
-			else return data.message;
-		},
-		/**
-		 *
-		 * Init the form validation
-		 *
-		 */
-		_formFeedback = function(response) {
+		var $form = this,
+			_ID = '_' + new Date().getTime(),
+			_isDisabled = false,
+			_options = $.extend({
+				ajaxOptions: {},
+				extraFormParams: {},
+				onError: $.noop,
+				onBeforeSend: $.noop,
+				onSuccess: $.noop,
+				findErrors: null,
+				findSuccessMessage: null,
+				validateResponse: null,
+				removeTheFormOnSuccess: true,
+				$formFeedbackWrapper: null,
+				onInputError: null
+			}, customOptions),
+			/**
+			 * Find any value into a javascript object
+			 * @param  { Object } obj
+			 * @param  { String } path - path to the object value
+			 */
+			_deepFind = function(obj, path) {
+				var paths = path.split('.'),
+					current = obj,
+					i;
 
-			$form.stop().animate({
-				opacity:1
-			});
+				for (i = 0; i < paths.length; ++i) {
+					if (current[paths[i]] == undefined) {
+						return undefined;
+					} else {
+						current = current[paths[i]];
+					}
+				}
+				return current;
+			},
+			/**
+			 * Parse the json received to get any value
+			 * it will use custom parsing methods if specified in the options
+			 * @param  { String } customParsingFunction - is the parsing function passed to the plugin options
+			 * @param  { Object } data
+			 * @param  { String } defaultPathToTheValue
+			 */
+			_parse = function(customParsingFunction, data, defaultPathToTheValue) {
 
-			$('.error', $form).removeClass('error');
-			if (_validateResponse(response))
-				_onFormSuccess(response);
-			else
-				_onFormError(response);
+				if (_options[customParsingFunction])
+					return _options[customParsingFunction](data);
+				else
+					return _deepFind(data, defaultPathToTheValue);
+			},
+			/**
+			 *
+			 * Init the form validation
+			 *
+			 */
+			_formFeedback = function(response) {
 
-			_isDisabled = false;
-		},
-		/**
-		 * Destroy the plugin stuff
-		 */
-		_destroy = function() {
-			$form.off('.' + _ID).data('GIForm', null);
-		},
-		/**
-		 *
-		 * Print the message success message
-		 *
-		 */
-		_onFormSuccess = function(response) {
+				$form.stop().animate({
+					opacity: 1
+				});
 
-			if (_options.$formFeedbackWrapper) {
+				$('.error', $form).removeClass('error');
+				if (_parse('validateResponse', response, 'success'))
+					_onFormSuccess(response);
+				else
+					_onFormError(response);
 
-				_options.$formFeedbackWrapper.html(_parseSuccessMsg(response));
-			}
-			if (_options.removeTheFormOnSuccess) {
-				$form.stop().off().remove();
-			}
-		},
-		/**
-		 *
-		 * Append the form errors
-		 *
-		 */
-		_onFormError = function(response) {
-			_.each(_parseErrors(response), function(error) {
-				var $input = $('[name=' + error + ']', $form);
-				$input.addClass('error');
-				if (_options.onInputError)
-					_options.onInputError($input, error);
-			}, this);
-		},
-		_onBeforeSend = function () {
-			$form.stop().animate({
-				opacity:0.3
-			});
-			_isDisabled = true;
-		},
-		/**
-		 *
-		 * On form submit callback
-		 *
-		 */
-		_onFormSubmit = function(e) {
-			e.preventDefault();
+				_isDisabled = false;
+			},
+			/**
+			 * Destroy the plugin stuff
+			 */
+			_destroy = function() {
+				$form.off('.' + _ID).data('GIForm', null);
+			},
+			/**
+			 *
+			 * Print the message success message
+			 *
+			 */
+			_onFormSuccess = function(response) {
 
-			if (_isDisabled) return false;
+				if (_options.$formFeedbackWrapper) {
+					_options.$formFeedbackWrapper.html(_parse('findSuccessMessage', response, 'success'));
+				}
+				if (_options.removeTheFormOnSuccess) {
+					$form.stop().off().remove();
+				}
 
-			// get the form input data
-			var formData = $form.serialize(),
-				extraFormParams = _options.extraFormParams;
+				_options.onSuccess(response);
+			},
+			/**
+			 *
+			 * Append the form errors
+			 *
+			 */
+			_onFormError = function(response) {
+				_.each(_parse('findErrors', response, 'errors'), function(error) {
+					var $input = $('[name=' + error + ']', $form);
+					$input.addClass('error');
+					if (_options.onInputError)
+						_options.onInputError($input, error);
+				}, this);
 
-			// extend the form params
-			$.each(extraFormParams, function(value, key) {
-				formData += '&' + key + '=' + value;
-			});
+				_options.onError(response);
 
-			// fire the ajax request
-			$.ajax({
-				url: $form.attr('action'),
-				data: formData,
-				dataType:'json',
-				method: 'post',
-				beforeSend: _onBeforeSend,
-			}, _options.ajaxOptions).always(_formFeedback);
-		},
-		/**
-		 * Public api
-		 */
-		API = {
-			destroy: _destroy
-		};
+			},
+			_onBeforeSend = function() {
+				$form.stop().animate({
+					opacity: 0.3
+				});
+				_isDisabled = true;
 
-	// bind the submit event to the form
-	$form
-		.on('submit.' + _ID, _onFormSubmit)
-		.data('GIForm', API);
+				_options.onBeforeSend();
+			},
+			/**
+			 *
+			 * On form submit callback
+			 *
+			 */
+			_onFormSubmit = function(e) {
+				e.preventDefault();
 
-	return API;
+				if (_isDisabled) return false;
 
-};
+				// get the form input data
+				var formData = $form.serialize(),
+					extraFormParams = _options.extraFormParams;
+
+				// extend the form params
+				$.each(extraFormParams, function(value, key) {
+					formData += '&' + key + '=' + value;
+				});
+
+				// fire the ajax request
+				$.ajax({
+					url: $form.attr('action'),
+					data: formData,
+					dataType: 'json',
+					method: 'post',
+					beforeSend: _onBeforeSend,
+				}, _options.ajaxOptions)
+					.always(_formFeedback);
+			},
+			/**
+			 * Public api
+			 */
+			API = {
+				__VERSION: '0.0.1',
+				destroy: _destroy
+			};
+
+		// bind the submit event to the form
+		$form
+			.on('submit.' + _ID, _onFormSubmit)
+			.data('GIForm', API);
+
+		return API;
+
+	};
+}));
