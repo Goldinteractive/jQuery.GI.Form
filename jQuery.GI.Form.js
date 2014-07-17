@@ -98,7 +98,7 @@
 			_onFormSuccess = function(response) {
 
 				if (_options.$formFeedbackWrapper) {
-					_options.$formFeedbackWrapper.html(_parse('findSuccessMessage', response, 'success'));
+					_options.$formFeedbackWrapper.html(_parse('findSuccessMessage', response, 'message'));
 				}
 				if (_options.removeTheFormOnSuccess) {
 					$form.stop().off().remove();
@@ -113,7 +113,7 @@
 			 */
 			_onFormError = function(response) {
 				_.each(_parse('findErrors', response, 'errors'), function(error) {
-					var $input = $('[name=' + error + ']', $form);
+					var $input = $('[name="' + error + '"]', $form);
 					$input.addClass('error');
 					if (_options.onInputError)
 						_options.onInputError($input, error);
@@ -163,7 +163,7 @@
 			 * Public api
 			 */
 			API = {
-				__VERSION: '0.0.1',
+				__VERSION: '0.0.2',
 				destroy: _destroy
 			};
 
