@@ -1,7 +1,7 @@
 /**
  * Module to validate any form via ajax having an ajax api
  */
-(function (root, factory) {
+(function(root, factory) {
 	if (typeof define === 'function' && define.amd) {
 		define(['jquery'], factory);
 	} else if (typeof exports === 'object') {
@@ -10,9 +10,11 @@
 		// Browser globals (root is window)
 		root.returnExports = factory(jQuery);
 	}
-}(this, function ($) {
-	$.fn.GIForm = function (customOptions) {
-		'use strict';
+}(this, function($) {
+
+	'use strict';
+
+	$.fn.GIForm = function(customOptions) {
 		/**
 		 * Private methods
 		 */
@@ -37,7 +39,7 @@
 			 * @param  { Object } obj
 			 * @param  { String } path - path to the object value
 			 */
-			_deepFind = function (obj, path) {
+			_deepFind = function(obj, path) {
 				var paths = path.split('.'),
 					current = obj,
 					i;
@@ -58,7 +60,7 @@
 			 * @param  { Object } data
 			 * @param  { String } defaultPathToTheValue
 			 */
-			_parse = function (customParsingFunction, data, defaultPathToTheValue) {
+			_parse = function(customParsingFunction, data, defaultPathToTheValue) {
 
 				if (_options[customParsingFunction])
 					return _options[customParsingFunction](data);
@@ -70,7 +72,7 @@
 			 * Init the form validation
 			 *
 			 */
-			_formFeedback = function (response) {
+			_formFeedback = function(response) {
 
 				$form.stop().animate({
 					opacity: 1
@@ -87,7 +89,7 @@
 			/**
 			 * Destroy the plugin stuff
 			 */
-			_destroy = function () {
+			_destroy = function() {
 				$form.off('.' + _ID).data('GIForm', null);
 			},
 			/**
@@ -95,7 +97,7 @@
 			 * Print the message success message
 			 *
 			 */
-			_onFormSuccess = function (response) {
+			_onFormSuccess = function(response) {
 
 				if (_options.$formFeedbackWrapper) {
 					_options.$formFeedbackWrapper.html(_parse('findSuccessMessage', response, 'message'));
@@ -111,9 +113,8 @@
 			 * Append the form errors
 			 *
 			 */
-			_onFormError = function (response) {
-				$(_parse('findErrors', response, 'errors')).each(function (i, error) {
-					console.log(error);
+			_onFormError = function(response) {
+				$(_parse('findErrors', response, 'errors')).each(function(i, error) {
 					var $input = $('[name="' + error + '"]', $form);
 					$input.addClass('error');
 					if (_options.onInputError)
@@ -123,7 +124,7 @@
 				_options.onError(response);
 
 			},
-			_onBeforeSend = function () {
+			_onBeforeSend = function() {
 				$form.stop().animate({
 					opacity: 0.3
 				});
@@ -136,7 +137,7 @@
 			 * On form submit callback
 			 *
 			 */
-			_onFormSubmit = function (e) {
+			_onFormSubmit = function(e) {
 				e.preventDefault();
 
 				if (_isDisabled) return false;
@@ -146,18 +147,18 @@
 					extraFormParams = _options.extraFormParams;
 
 				// extend the form params
-				$.each(extraFormParams, function (key, value) {
+				$.each(extraFormParams, function(key, value) {
 					formData += '&' + key + '=' + value;
 				});
 
 				// fire the ajax request
 				$.ajax({
-					url: $form.attr('action'),
-					data: formData,
-					dataType: 'json',
-					method: $form.attr('type') || 'post',
-					beforeSend: _onBeforeSend,
-				}, _options.ajaxOptions)
+						url: $form.attr('action'),
+						data: formData,
+						dataType: 'json',
+						method: $form.attr('type') || 'post',
+						beforeSend: _onBeforeSend,
+					}, _options.ajaxOptions)
 					.always(_formFeedback);
 			},
 			/**
