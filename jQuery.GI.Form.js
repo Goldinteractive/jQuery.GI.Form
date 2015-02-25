@@ -112,7 +112,8 @@
 			 *
 			 */
 			_onFormError = function (response) {
-				_.each(_parse('findErrors', response, 'errors'), function (error) {
+				$(_parse('findErrors', response, 'errors')).each(function (i, error) {
+					console.log(error);
 					var $input = $('[name="' + error + '"]', $form);
 					$input.addClass('error');
 					if (_options.onInputError)
@@ -154,7 +155,7 @@
 					url: $form.attr('action'),
 					data: formData,
 					dataType: 'json',
-					method: 'post',
+					method: $form.attr('type') || 'post',
 					beforeSend: _onBeforeSend,
 				}, _options.ajaxOptions)
 					.always(_formFeedback);
