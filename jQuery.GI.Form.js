@@ -114,12 +114,13 @@
 			 *
 			 */
 			_onFormError = function(response) {
-				$(_parse('findErrors', response, 'errors')).each(function(i, error) {
+
+				_parse('findErrors', response, 'errors').forEach(function(error) {
 					var $input = $('[name="' + error + '"]', $form);
 					$input.addClass('error');
 					if (_options.onInputError)
 						_options.onInputError($input, error);
-				}, this);
+				});
 
 				_options.onError(response);
 
