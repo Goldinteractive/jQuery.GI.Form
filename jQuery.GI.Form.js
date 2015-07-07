@@ -167,7 +167,7 @@
 			 * Public api
 			 */
 			API = {
-				__VERSION: '0.0.2',
+				__VERSION: '1.0.0',
 				destroy: _destroy
 			};
 
