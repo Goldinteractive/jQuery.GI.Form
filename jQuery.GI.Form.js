@@ -24,6 +24,7 @@
 			_options = $.extend({
 				ajaxOptions: {},
 				extraFormParams: {},
+				errorClass: 'error',
 				onError: $.noop,
 				onBeforeSend: $.noop,
 				onSuccess: $.noop,
@@ -78,7 +79,7 @@
 					opacity: 1
 				});
 
-				$('.error', $form).removeClass('error');
+				$('.' + _options.errorClass, $form).removeClass(_options.errorClass);
 				if (_parse('validateResponse', response, 'success'))
 					_onFormSuccess(response);
 				else
@@ -117,7 +118,7 @@
 
 				_parse('findErrors', response, 'errors').forEach(function(error) {
 					var $input = $('[name="' + error + '"]', $form);
-					$input.addClass('error');
+					$input.addClass(_options.errorClass);
 					if (_options.onInputError)
 						_options.onInputError($input, error);
 				});
