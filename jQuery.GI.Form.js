@@ -145,16 +145,13 @@
 				if (_isDisabled) return false;
 
 				// get the form input data
-				var formData = {},
+				var formData = $form.serialize(),
 					extraFormParams = _options.extraFormParams;
 
-				// serialize data
-				$.each($form.serializeArray(), function() {
-				   formData[this.name] = this.value || '';
-				});
-
 				// extend the form params
-				$.extend(formData, extraFormParams);
+				$.each(extraFormParams, function(key, value) {
+					formData += '&' + key + '=' + value;
+				});
 
 				// fire the ajax request
 				$.ajax({
@@ -162,7 +159,7 @@
 						data: formData,
 						dataType: 'json',
 						method: $form.attr('type') || 'post',
-						beforeSend: _onBeforeSend
+						beforeSend: _onBeforeSend,
 					}, _options.ajaxOptions)
 					.always(_formFeedback);
 			},
@@ -170,7 +167,7 @@
 			 * Public api
 			 */
 			API = {
-				__VERSION: '1.0.1',
+				__VERSION: '1.1.0',
 				destroy: _destroy
 			};
 
