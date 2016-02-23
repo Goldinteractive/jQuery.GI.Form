@@ -73,17 +73,22 @@
 			 * Init the form validation
 			 *
 			 */
-			_formFeedback = function(response) {
+			_formFeedback = function(response, status) {
+
+				var parsedResponse = _parse('validateResponse', response, 'success')
 
 				$form.stop().animate({
 					opacity: 1
 				});
 
 				$('.' + _options.errorClass, $form).removeClass(_options.errorClass);
-				if (_parse('validateResponse', response, 'success'))
-					_onFormSuccess(response);
+				if (
+					parsedResponse && status == 'success' ||
+					parsedResponse == null && status == 'success'
+				)
+					_onFormSuccess.apply(this, arguments);
 				else
-					_onFormError(response);
+					_onFormError.apply(this, arguments);
 
 				_isDisabled = false;
 			},
@@ -167,7 +172,7 @@
 			 * Public api
 			 */
 			API = {
-				__VERSION: '1.1.0',
+				__VERSION: '2.0.0',
 				destroy: _destroy
 			};
 
