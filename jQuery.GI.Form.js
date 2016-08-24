@@ -104,7 +104,6 @@
 			 *
 			 */
 			_onFormSuccess = function(response) {
-
 				if (_options.$formFeedbackWrapper) {
 					_options.$formFeedbackWrapper.html(_parse('findSuccessMessage', response, 'message'));
 				}
@@ -123,6 +122,11 @@
 
 				_parse('findErrors', response, 'errors').forEach(function(error) {
 					var $input = $('[name="' + error + '"]', $form);
+
+					if($input.length == 0) {
+						$input = $('[name="' + error + '[]"]', $form);
+					}
+
 					$input.addClass(_options.errorClass);
 					if (_options.onInputError)
 						_options.onInputError($input, error);
