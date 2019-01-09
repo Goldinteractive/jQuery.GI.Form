@@ -1,0 +1,19 @@
+{
+  "name": "jquery.gi.form",
+  "version": "1.0.0",
+  "description": "jQuery.GI.Form ==============",
+  "main": "jQuery.GI.Form.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Goldinteractive/jQuery.GI.Form.git"
+  },
+  "author": "Gold Interactive",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Goldinteractive/jQuery.GI.Form/issues"
+  },
+  "homepage": "https://github.com/Goldinteractive/jQuery.GI.Form#readme"
+}
